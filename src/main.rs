@@ -1,22 +1,47 @@
 
 use std::io::{self, Write};
 
+struct Prestamo {
+    tasa: f64,
+    plazo: i32,
+    monto: f64,
+}
+
+
+impl Prestamo {
+    fn cuota_sistema_frances(&self) -> f64 {
+        if self.tasa== 0.0{
+            return self.monto / self.plazo as f64;
+        }
+
+    let num= ((1.0 + self.tasa/1200.0).powi(self.plazo)) * (self.tasa/1200.0);
+
+    let den= (1.0 + self.tasa/1200.0).powi(self.plazo) - 1.0;
+
+    self.monto * (num / den)
+
+    }
+
+}
+
+
 fn main() {
 
     loop {
 
-        let i= input_usuario_tasa();
+        let prestamo = Prestamo {
+            tasa: input_usuario_tasa(),
+            plazo: input_usuario_plazo(),
+            monto: input_usuario_deuda(),
+        };
 
-        let n= input_usuario_plazo();
-
-        let p= input_usuario_deuda();
-
-        let cuota= monto_cuota(i, n, p);
+        let cuota= prestamo.cuota_sistema_frances();
 
         println!("\nMonto de cuota: {:.2} Unidades Valor mensuales", cuota);
 
-        if preguntar_continuar()== false {
-            break;
+        match preguntar_continuar() {
+            Decision::Continuar => continue,
+            Decision::Salir => break,
         }
     }
     
@@ -26,7 +51,13 @@ fn main() {
 
 //Consultamos si debemos continuar
 
-fn preguntar_continuar() -> bool {
+enum Decision {
+    Continuar,
+    Salir,
+}
+
+
+fn preguntar_continuar() -> Decision {
     loop {
         let mut s = String::new();
         print!("\n¿Desea calcular otra cuota? (s/n): ");
@@ -34,8 +65,8 @@ fn preguntar_continuar() -> bool {
 
         io::stdin().read_line(&mut s).unwrap();
         match s.trim().to_lowercase().as_str() {
-            "s" | "si" | "sí" => return true,
-            "n" | "no" => return false,
+            "s" | "si" | "sí" => return Decision::Continuar,
+            "n" | "no" => return Decision::Salir,
             _ => println!("Respuesta inválida. Ingrese 's' o 'n'."),
         }
     }
@@ -49,21 +80,6 @@ fn pausa() {
     let _ = io::stdin().read_line(&mut s);   
 }
 
-//Calcula el monto de la cuota e imprime el valor
-
-fn monto_cuota(tna: f64, plazo: i32, monto: f64) -> f64 {
-
-    if tna== 0.0 {
-        return monto / plazo as f64;
-    } 
-
-    let num= ((1.0 + tna/1200.0).powi(plazo)) * (tna/1200.0);
-
-    let den= (1.0 + tna/1200.0).powi(plazo) - 1.0;
-
-    monto * (num / den)
-
-}
 
 // Toma input de tasa de un usuario y lo convierte a decimal
 
@@ -142,3 +158,4 @@ fn input_usuario_deuda() -> f64 {
         }
     }
 }
+
